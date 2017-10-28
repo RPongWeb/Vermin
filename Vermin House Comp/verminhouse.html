@@ -1,0 +1,151 @@
+<!DOCTYPE HTML>
+<!-- Ricky Pong -->
+<html>
+	<head>
+		<title>Vermin House</title>
+		<link rel = "stylesheet" href = "dressing.css" />
+		<style>
+			img
+			{
+				height:75px;
+			}
+			
+			div
+			{
+				width:100%;
+				height:85px;
+				border-bottom:thick solid #663300;
+			}
+
+			#house
+			{
+				margin:auto;
+				text-align:center;
+				font:bold 14pt comic sans ms;
+				margin-top:100px;
+				width:85%;
+				height:auto;
+				border:15px solid black;
+				border-radius:25px;
+			}
+			
+			.bgrnd
+			{
+				opacity:.2;
+			}
+			
+			.titlecontent
+			{
+				border:2px solid #666633;
+				background-color:#666633;
+				border-radius:10px;
+				color:white;
+			}
+			
+			.titlecontainer
+			{
+				font:bold 36pt comic sans ms;
+				margin-top:25px;
+			}
+	</style>
+		<script type = "text/javascript" src = "utilities.js"></script>
+		<script>
+			function Vermin(str, imgFile)
+			{
+				this.imageFilename = imgFile;
+				this.verminStrength = str;
+			}
+
+			function initialize()
+			{
+				NONE = -1, ATTIC = 0, TOP_FLOOR = 1, GROUND_FLOOR = 2, BASEMENT = 3;
+				MIN_TIME = 100, MAX_TIME = 1000;
+				PREFERENCE_CHANCE = .75;
+				ATTACK_CHANCE = .25;
+				
+				VERMIN_LIST = ["bat.png", "hanging-spider.png", "long-antennae-bug.png", "mite-alt.png", "mouse.png", "spotted-bug.png", "werewolf.png"];
+				VERMIN_STRENGTH = [18, 8, 4, 1, 2, 11, 192];
+				VERMIN_PREFERENCE = [ATTIC, BASEMENT, BASEMENT, TOP_FLOOR, NONE, NONE, NONE];
+				
+				theHouseElements = document.getElementById("house");
+				theFloorsElements = theHouseElements.getElementsByClassName("floor");
+				
+				theHouse = [];
+				for (var i = 0; i <= BASEMENT; i++)
+					theHouse[i] = [];
+
+				createRandomVermin();
+				verminFoodChainTimer = setInterval(verminAttack, 1000);
+			}
+			
+			function verminAttack()
+			{
+				for (var f = 0; f < theHouse.length; f++)
+				{
+					for (var v = theHouse[f].length - 1; v >= 0; v--)
+					{
+						if (Math.random() < ATTACK_CHANCE)
+						{
+							for (var p = v - 1; p >= 0; p--)
+							{
+								if (theHouse[f][p].verminStrength <= theHouse[f][v].verminStrength)
+								{
+									theHouse[f].splice(p, 1);
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+			
+			function createRandomVermin()
+			{
+				verminTimer = setTimeout(createRandomVermin, getRandomInteger(MIN_TIME, MAX_TIME));
+				var verminIdx = getRandomInteger(0, VERMIN_LIST.length - 1);
+				
+				if (VERMIN_PREFERENCE[verminIdx] != NONE && Math.random() < PREFERENCE_CHANCE)
+					var floor = VERMIN_PREFERENCE[verminIdx];
+				else
+					var floor = getRandomInteger(0, BASEMENT);
+				
+				theHouse[floor].push(new Vermin(VERMIN_STRENGTH[verminIdx], VERMIN_LIST[verminIdx]));
+				display();
+			}
+			
+			function display()
+			{
+				for (var i = 0; i < theFloorsElements.length; i++)
+				{
+					while (theFloorsElements[i].lastChild != null)
+						theFloorsElements[i].removeChild(theFloorsElements[i].lastChild);
+				}
+				
+				for (i = 0; i < theHouse.length; i++)
+				{
+					for (j = 0; j < theHouse[i].length; j++)
+					{
+						var im = document.createElement("img");
+						im.src = "images/" + theHouse[i][j].imageFilename;
+						theFloorsElements[i].appendChild(im);
+					}
+				}
+			}
+		</script>
+	</head>
+		
+	<body onload = "initialize();">
+		<img class = "bgrnd" src = "images/houses.jpg" />
+		<h1 class = "titlecontainer"><span class = "titlecontent">Vermin House</span></h1>
+		<div id = "house">
+			<span class = "titlecontent">Attic</span><br />
+			<div id = "attic" class = "floor"></div>
+			<span class = "titlecontent">Top Floor</span><br />
+			<div id = "top floor" class = "floor"></div>
+			<span class = "titlecontent">Ground Floor</span><br />
+			<div id = "ground floor" class = "floor"></div>
+			<span class = "titlecontent">Basement</span><br />
+			<div id = "basement" class = "floor"></div>
+		</div>
+	</body>
+</html>
